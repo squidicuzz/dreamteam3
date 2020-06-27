@@ -151,9 +151,20 @@ public:
         assert(hashGenesisBlock == uint256("0x00000a1205b44eec30c1ee6015262ba47d1950b1d0b143f9cecb6de97f234e5a"));
         assert(genesis.hashMerkleRoot == uint256("0x0255bd06c554406c99efc0b7732e560c9c5a4d49d7b5ea3d17e66737a777b965"));
 
-	      vSeeds.push_back(CDNSSeedData("95.179.133.32", "95.179.133.32")); // reachable!!
-        vSeeds.push_back(CDNSSeedData("95.179.157.20", "95.179.157.20")); // not reachable?
-        vSeeds.push_back(CDNSSeedData("95.179.152.94", "95.179.152.94")); // not reachable?
+        vSeeds.push_back(CDNSSeedData("dns1.dt3.xyz", "dns1.dt3.xyz")); // primary DNS seeder
+        vSeeds.push_back(CDNSSeedData("dns2.dt3.xyz", "dns2.dt3.xyz")); // secondary DNS seeder
+        vSeeds.push_back(CDNSSeedData("95.179.133.32", "95.179.133.32")); // reachable node as of 2020-06
+        vSeeds.push_back(CDNSSeedData("us-e1.dt3.xyz", "us-e1.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("us-e2.dt3.xyz", "us-e2.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("us-w1.dt3.xyz", "us-w1.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("us-w2.dt3.xyz", "us-w2.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("aus.dt3.xyz", "aus.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("nl.dt3.xyz", "nl.dt3.xyz")); // squid
+        vSeeds.push_back(CDNSSeedData("de.dt3.xyz", "de.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("uk.dt3.xyz", "uk.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("fr.dt3.xyz", "fr.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("jp.dt3.xyz", "jp.dt3.xyz"));
+        vSeeds.push_back(CDNSSeedData("si.dt3.xyz", "si.dt3.xyz"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 5); // 3
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 30); // D
@@ -175,7 +186,7 @@ public:
         fHeadersFirstSyncingActive = false;
 
         nPoolMaxTransactions = 3;
-	      strSporkKey = "04624DA8CE5519338594A322474391D3C89A0C4A2DE1B3C95BE5091853462C4FDC03539286B40A0247EC5DB3CA674DC1FF33DB611531CDFAC7B1C9BFD36DBB2C07";
+        strSporkKey = "04624DA8CE5519338594A322474391D3C89A0C4A2DE1B3C95BE5091853462C4FDC03539286B40A0247EC5DB3CA674DC1FF33DB611531CDFAC7B1C9BFD36DBB2C07";
         strObfuscationPoolDummyAddress = "3HwKnkBg9SAcAMNjiPYGPqeiik8hk4UX44";
         nStartMasternodePayments = 1553490138;
 
@@ -235,7 +246,7 @@ public:
         genesis.nTime = 1515616140;
         genesis.nNonce = 79855;
 
-	       hashGenesisBlock = genesis.GetHash();
+        hashGenesisBlock = genesis.GetHash();
         //assert(hashGenesisBlock == uint256("0x000007cff63ef602a51bf074e384b3516f0dd202f14d52f7c8c9b1af9423ab2e"));
 
         vFixedSeeds.clear();
