@@ -111,12 +111,11 @@ bool IsLimited(enum Network net);
 bool IsLimited(const CNetAddr& addr);
 bool AddLocal(const CService& addr, int nScore = LOCAL_NONE);
 bool AddLocal(const CNetAddr& addr, int nScore = LOCAL_NONE);
-bool RemoveLocal(const CService& addr);
 bool SeenLocal(const CService& addr);
 bool IsLocal(const CService& addr);
 bool GetLocal(CService& addr, const CNetAddr* paddrPeer = NULL);
 bool IsReachable(enum Network net);
-bool IsReachable(const CNetAddr& addr);
+bool IsReachable(const CService& addr);
 void SetReachable(enum Network net, bool fFlag = true);
 CAddress GetLocalAddress(const CNetAddr* paddrPeer = NULL);
 
@@ -239,10 +238,10 @@ public:
     std::string addrName;
     CService addrLocal;
     int nVersion;
-    // strSubVer is whatever byte array we read from the dreamteam3. However, this field is intended
+    // strSubVer is whatever byte array we read from the wire. However, this field is intended
     // to be printed out, displayed to humans in various forms and so on. So we sanitize it and
     // store the sanitized version in cleanSubVer. The original should be used when dealing with
-    // the network or dreamteam3 types and the cleaned string used when displayed or logged.
+    // the network or wire types and the cleaned string used when displayed or logged.
     std::string strSubVer, cleanSubVer;
     bool fWhitelisted; // This peer can bypass DoS banning.
     bool fOneShot;
@@ -311,6 +310,17 @@ public:
     // Whether a ping is requested.
     bool fPingQueued;
 
+	//Return a numeric format version string.
+	int getNumericVersion() {
+        if (nVersion == 0) return 0;
+
+        string strResult;
+		for (std::string::size_type i = 0; i < strSubVer.size(); i++) {
+            if ((strSubVer[i] <= '9') && (strSubVer[i] >= '0'))
+				strResult.push_back(strSubVer[i]);
+        }
+        return std::stoi(strResult);
+	}
     CNode(SOCKET hSocketIn, CAddress addrIn, std::string addrNameIn = "", bool fInboundIn = false);
     ~CNode();
 

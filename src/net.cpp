@@ -59,7 +59,7 @@ using namespace std;
 
 namespace
 {
-const int MAX_OUTBOUND_CONNECTIONS = 24;
+const int MAX_OUTBOUND_CONNECTIONS = 20;
 
 struct ListenSocket {
     SOCKET socket;
@@ -83,7 +83,7 @@ static CNode* pnodeLocalHost = NULL;
 uint64_t nLocalHostNonce = 0;
 static std::vector<ListenSocket> vhListenSocket;
 CAddrMan addrman;
-int nMaxConnections = 256;
+int nMaxConnections = 150;
 bool fAddressesInitialized = false;
 
 vector<CNode*> vNodes;
@@ -231,7 +231,6 @@ void AdvertizeLocal(CNode* pnode)
             addrLocal.SetIP(pnode->addrLocal);
         }
         if (addrLocal.IsRoutable()) {
-            LogPrintf("AdvertizeLocal: advertizing address %s\n", addrLocal.ToString());
             pnode->PushAddress(addrLocal);
         }
     }
@@ -276,14 +275,6 @@ bool AddLocal(const CService& addr, int nScore)
 bool AddLocal(const CNetAddr& addr, int nScore)
 {
     return AddLocal(CService(addr, GetListenPort()), nScore);
-}
-
-bool RemoveLocal(const CService& addr)
-{
-    LOCK(cs_mapLocalHost);
-    LogPrintf("RemoveLocal(%s)\n", addr.ToString());
-    mapLocalHost.erase(addr);
-    return true;
 }
 
 /** Make a particular network entirely off-limits (no automatic connects to it) */
@@ -334,10 +325,30 @@ bool IsReachable(enum Network net)
 }
 
 /** check whether a given address is in a network we can probably connect to */
-bool IsReachable(const CNetAddr& addr)
+bool IsReachable(const CService& addr)
 {
-    enum Network net = addr.GetNetwork();
-    return IsReachable(net);
+    //enum Network net = addr.GetNetwork();
+    //return IsReachable(net);
+
+	//Skip IPv6 address
+	if (addr.IsIPv6())
+		return true;
+
+	SOCKET hSocket;
+	bool proxyConnectionFailed = false;
+
+	if(ConnectSocket(addr, hSocket, nConnectTimeout, &proxyConnectionFailed)){
+		if (!IsSelectableSocket(hSocket)) {
+			CloseSocket(hSocket);
+			//LogPrintf("HOST %s Connected but not Selectable\n", addr.ToStringIPPort());
+			return false;
+		}
+		CloseSocket(hSocket);
+		return true;
+	}
+	//LogPrintf("HOST %s UNREACHABLE\n", addr.ToStringIPPort());
+
+	return false;
 }
 
 void AddressCurrentlyConnected(const CService& addr)
@@ -764,13 +775,8 @@ void ThreadSocketHandler()
                 }
             }
         }
-        size_t vNodesSize;
-        {
-            LOCK(cs_vNodes);
-            vNodesSize = vNodes.size();
-        }
-        if(vNodesSize != nPrevNodeCount) {
-            nPrevNodeCount = vNodesSize;
+        if (vNodes.size() != nPrevNodeCount) {
+            nPrevNodeCount = vNodes.size();
             uiInterface.NotifyNumConnectionsChanged(nPrevNodeCount);
         }
 
@@ -1032,7 +1038,7 @@ void ThreadMapPort()
             }
         }
 
-        string strDesc = "DreamTeam3 " + FormatFullVersion();
+        string strDesc = "DT3 " + FormatFullVersion();
 
         try {
             while (true) {
@@ -1441,6 +1447,24 @@ void static ThreadStakeMinter()
     LogPrintf("ThreadStakeMinter exiting,\n");
 }
 
+void static ThreadMasternodeNetCheck()
+{
+    boost::this_thread::interruption_point();
+    LogPrintf("ThreadMasternodeNetCheck started\n");
+
+    try {
+        mnodeman.CheckReachable();
+        boost::this_thread::interruption_point();
+    } catch (std::exception& e) {
+        LogPrintf("ThreadMasternodeNetCheck() exception \n");
+    } catch (...) {
+        LogPrintf("ThreadMasternodeNetCheck() error \n");
+    }
+    LogPrintf("ThreadMasternodeNetCheck exiting,\n");
+}
+
+
+
 bool BindListenPort(const CService& addrBind, string& strError, bool fWhitelisted)
 {
     strError = "";
@@ -1627,6 +1651,10 @@ void StartNode(boost::thread_group& threadGroup)
     // ppcoin:mint proof-of-stake blocks in the background
     if (GetBoolArg("-staking", true))
         threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
+
+	//Create thread for check masternode net reachable
+	threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "netCheckAdrrMN", &ThreadMasternodeNetCheck));
+
 }
 
 bool StopNode()
