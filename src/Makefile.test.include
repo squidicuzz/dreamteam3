@@ -70,7 +70,6 @@ BITCOIN_TESTS =\
   test/skiplist_tests.cpp \
   test/test_dreamteam3.cpp \
   test/timedata_tests.cpp \
-  test/torcontrol_tests.cpp \
   test/transaction_tests.cpp \
   test/uint256_tests.cpp \
   test/univalue_tests.cpp \
